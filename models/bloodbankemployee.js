@@ -5,8 +5,8 @@ const employeeSchema = new mongoose.Schema({
   employeeId: { type: String, required: true, unique: true },
   name: String,
   contactNo: String,
-  // bloodBank: { type: mongoose.Schema.Types.ObjectId, ref: "BloodBank" },
-    bloodBank: { type: String }   // <-- store string like "1"
+  bloodBank: { type: mongoose.Schema.Types.ObjectId, ref: "BloodBank" },
+    // bloodBank: { type: String }   // <-- store string like "1"
 
 });
 

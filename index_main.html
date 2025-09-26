@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Blood Bank Management System</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root {
+      /* Light Theme Color Palette */
+      --primary: #1e40af;
+      --primary-light: #3b82f6;
+      --primary-lighter: #dbeafe;
+      --primary-dark: #1e3a8a;
+      
+      --secondary: #64748b;
+      --secondary-light: #94a3b8;
+      --secondary-lighter: #f1f5f9;
+      
+      --success: #16a34a;
+      --success-light: #22c55e;
+      --success-lighter: #dcfce7;
+      
+      --danger: #dc2626;
+      --danger-light: #ef4444;
+      --danger-lighter: #fef2f2;
+      
+      --warning: #ca8a04;
+      --warning-light: #eab308;
+      --warning-lighter: #fefce8;
+      
+      --info: #0284c7;
+      --info-light: #0ea5e9;
+      --info-lighter: #e0f2fe;
+      
+      /* Background Colors */
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8fafc;
+      --bg-tertiary: #f1f5f9;
+      --bg-soft: #f9fafb;
+      
+      /* Text Colors */
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      
+      /* Border Colors */
+      --border-primary: #e2e8f0;
+      --border-light: #f1f5f9;
+      --border-medium: #cbd5e1;
+      
+      /* Shadows */
+      --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      
+      /* Border Radius */
+      --radius-sm: 4px;
+      --radius: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-soft) 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: var(--space-lg);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-xl);
+      gap: var(--space-md);
+      padding: var(--space-lg);
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .logo-icon {
+      font-size: 32px;
+      filter: drop-shadow(0 2px 4px rgba(30, 64, 175, 0.2));
+    }
+
+    .api-status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: 14px;
+      color: var(--text-secondary);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-primary);
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+      }
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(22, 163, 74, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      margin-bottom: var(--space-xl);
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+      border-color: var(--border-medium);
+    }
+
+    .card-header {
+      padding: var(--space-lg);
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+      border-bottom: 1px solid var(--border-primary);
+    }
+
+    .card-body {
+      padding: var(--space-lg);
+    }
+
+    .card-title {
+      margin: 0 0 var(--space-xs) 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .card-subtitle {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: var(--space-md);
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-lg);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .control-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Form Elements */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-md);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xs);
+    }
+
+    input, select, textarea, button {
+      padding: 12px var(--space-md);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-primary);
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      background: var(--bg-primary);
+    }
+
+    input:hover, select:hover, textarea:hover {
+      border-color: var(--border-medium);
+    }
+
+    input:invalid {
+      border-color: var(--danger-light);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Buttons */
+    .btn {
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      transition: all 0.2s ease;
+      border: none;
+      font-size: 14px;
+      border-radius: var(--radius);
+      padding: 12px var(--space-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-primary);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border-color: var(--border-medium);
+      transform: translateY(-1px);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--success-light) 0%, var(--success) 100%);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--danger) 0%, var(--danger-light) 100%);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--danger-light) 0%, var(--danger) 100%);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-sm {
+      padding: var(--space-sm) 12px;
+      font-size: 12px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: var(--space-md);
+    }
+
+    /* Tables */
+    .table-container {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+      margin-top: var(--space-md);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px var(--space-md);
+      text-align: left;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: middle;
+    }
+
+    th {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    tbody tr {
+      transition: background-color 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: var(--bg-soft);
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(248, 250, 252, 0.5);
+    }
+
+    tbody tr:nth-child(even):hover {
+      background: var(--bg-soft);
+    }
+
+    .actions {
+      white-space: nowrap;
+    }
+
+    /* Loading States */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border-primary);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Notifications */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      z-index: 1000;
+      max-width: 400px;
+      animation: slideIn 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .notification.success {
+      background: linear-gradient(135deg, var(--success-lighter) 0%, rgba(220, 252, 231, 0.95) 100%);
+      color: var(--success);
+      border: 1px solid var(--success-light);
+    }
+
+    .notification.error {
+      background: linear-gradient(135deg, var(--danger-lighter) 0%, rgba(254, 242, 242, 0.95) 100%);
+      color: var(--danger);
+      border: 1px solid var(--danger-light);
+    }
+
+    @keyframes slideIn {
+      from { 
+        transform: translateX(100%); 
+        opacity: 0; 
+      }
+      to { 
+        transform: translateX(0); 
+        opacity: 1; 
+      }
+    }
+
+    /* Search and Filters */
+    .search-bar {
+      position: relative;
+      margin-bottom: var(--space-md);
+    }
+
+    .search-input {
+      width: 100%;
+      padding-left: 40px;
+      background: var(--bg-primary);
+      border: 2px solid var(--border-light);
+    }
+
+    .search-input:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 16px;
+    }
+
+    /* Statistics Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-xl);
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      text-align: center;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transform: rotate(45deg);
+      transition: transform 0.6s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card:hover::before {
+      transform: rotate(45deg) translateX(100%);
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: var(--space-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+    }
+
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    /* Enhanced visual elements */
+    .hint {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--info-lighter);
+      border-radius: var(--radius);
+      border-left: 4px solid var(--info);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 12px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: var(--space-md);
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+
+      .card-body {
+        padding: var(--space-md);
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: var(--space-sm) 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .notification {
+        left: 12px;
+        right: 12px;
+        top: 12px;
+      }
+    }
+
+    /* Accessibility improvements */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Custom scrollbar for webkit browsers */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-medium);
+      border-radius: var(--radius);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-light);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>
+        <span class="logo-icon">🩸</span>
+        Blood Bank Management System
+      </h1>
+      <div class="api-status">
+        <div class="status-indicator" id="statusIndicator"></div>
+        <span>API: <span id="apiBaseSpan"></span></span>
+      </div>
+    </div>
+
+    <!-- Statistics Dashboard -->
+    <div class="stats-grid" id="statsGrid">
+      <!-- Statistics will be dynamically populated -->
+    </div>
+
+    <!-- Controls Card -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          ⚙️ Entity Management
+        </h3>
+        <p class="card-subtitle">Select an entity type to manage records</p>
+      </div>
+      <div class="card-body">
+        <div class="controls">
+          <div class="control-group">
+            <label for="entity">Entity Type</label>
+            <select id="entity" class="form-control">
+              <option value="donors">👤 Donors</option>
+              <option value="blood">🩸 Blood Inventory</option>
+              <option value="bloodbanks">🏥 Blood Banks</option>
+              <option value="employees">👥 Employees</option>
+              <option value="hospitals">🏨 Hospitals</option>
+              <option value="patients">🤒 Patients</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>&nbsp;</label>
+            <div class="btn-group">
+              <button id="refreshBtn" class="btn btn-secondary">
+                🔄 Refresh
+              </button>
+              <button id="clearFormBtn" class="btn btn-secondary">
+                🗑️ Clear Form
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search records...">
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card" id="formCard">
+      <div class="card-header">
+        <h3 id="formTitle" class="card-title">➕ Add New Record</h3>
+        <p class="card-subtitle">Fill in the form below to create a new record</p>
+      </div>
+      <div class="card-body">
+        <form id="mainForm">
+          <div id="formFields"></div>
+          <div class="btn-group">
+            <button id="submitBtn" type="submit" class="btn btn-success">
+              💾 Save Record
+            </button>
+            <button id="cancelEditBtn" type="button" class="btn btn-secondary" style="display:none">
+              ❌ Cancel Edit
+            </button>
+          </div>
+          <div class="hint">
+            💡 <strong>Tip:</strong> Some fields accept free text. Ensure IDs are unique for proper database relationships.
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Records Table Card -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">📊 Records Overview</h3>
+        <p class="card-subtitle">Manage and view all records</p>
+      </div>
+      <div class="card-body">
+        <div class="table-container">
+          <div class="table-wrapper">
+            <table id="recordsTable">
+              <thead>
+                <tr id="tableHead">
+                  <th>
+                    <div class="loading">
+                      <div class="spinner"></div>
+                      Loading records...
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*
+      Enhanced Blood Bank Management Frontend - Light Theme Version
+      - Clean, modern light color palette
+      - Improved accessibility and contrast ratios
+      - Subtle gradients and shadows for depth
+      - Professional medical application styling
+    */
+
+    const API_BASE = "http://localhost:3000/api";
+    document.getElementById('apiBaseSpan').innerText = API_BASE;
+
+    // DOM Elements
+    const entitySelect = document.getElementById('entity');
+    const formFieldsDiv = document.getElementById('formFields');
+    const mainForm = document.getElementById('mainForm');
+    const tableHead = document.getElementById('tableHead');
+    const tableBody = document.getElementById('tableBody');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    const formTitle = document.getElementById('formTitle');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const searchInput = document.getElementById('searchInput');
+    const statsGrid = document.getElementById('statsGrid');
+    const statusIndicator = document.getElementById('statusIndicator');
+
+    // State Management
+    let currentEntity = entitySelect.value;
+    let editingId = null;
+    let lastFetchedData = [];
+    let filteredData = [];
+
+    // Enhanced field definitions with validation and types
+    const entityFields = {
+      donors: [
+        {name: "donorId", label: "Donor ID", required: true, type: "text"},
+        {name: "name", label: "Full Name", required: true, type: "text"},
+        {name: "dob", label: "Date of Birth", type: "date"},
+        {name: "age", label: "Age", type: "number", min: 18, max: 65},
+        {name: "address", label: "Address", type: "textarea"},
+        {name: "contactNo", label: "Contact Number", type: "tel", pattern: "[0-9]{10}"},
+        {name: "diseases", label: "Medical Conditions", type: "text", placeholder: "Separate multiple conditions with commas"},
+        {name: "lastDonationDate", label: "Last Donation Date", type: "date"},
+        {name: "donationStatus", label: "Donation Status", type: "select", options: ["Eligible", "Not Eligible", "Pending"]}
+      ],
+      blood: [
+        {name: "bloodId", label: "Blood Sample ID", required: true, type: "text"},
+        {name: "bloodGroup", label: "Blood Group", required: true, type: "select", options: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]},
+        {name: "cost", label: "Cost per Unit", type: "number", min: 0, step: 0.01},
+        {name: "storedDate", label: "Storage Date", type: "date"},
+        {name: "expiryDate", label: "Expiry Date", type: "date"},
+        {name: "donor", label: "Associated Donor ID", type: "text", placeholder: "Leave blank if not applicable"}
+      ],
+      bloodbanks: [
+        {name: "bloodBankId", label: "Blood Bank ID", required: true, type: "text"},
+        {name: "order", label: "Order Details", type: "textarea"},
+        {name: "deliveryDate", label: "Delivery Date", type: "date"}
+      ],
+      employees: [
+        {name: "employeeId", label: "Employee ID", required: true, type: "text"},
+        {name: "name", label: "Full Name", required: true, type: "text"},
+        {name: "contactNo", label: "Contact Number", type: "tel", pattern: "[0-9]{10}"},
+        {name: "bloodBank", label: "Blood Bank ID", type: "text", placeholder: "Leave blank if not assigned"}
+      ],
+      hospitals: [
+        {name: "hospitalName", label: "Hospital Name", required: true, type: "text"},
+        {name: "address", label: "Hospital Address", type: "textarea"},
+        {name: "contactNo", label: "Contact Number", type: "tel", pattern: "[0-9]{10}"},
+        {name: "orderStatus", label: "Order Status", type: "select", options: ["Pending", "Processing", "Completed", "Cancelled"]}
+      ],
+      patients: [
+        {name: "patientId", label: "Patient ID", required: true, type: "text"},
+        {name: "name", label: "Full Name", required: true, type: "text"},
+        {name: "dob", label: "Date of Birth", type: "date"},
+        {name: "bloodGroup", label: "Blood Group", type: "select", options: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]},
+        {name: "contactNo", label: "Contact Number", type: "tel", pattern: "[0-9]{10}"},
+        {name: "borrowDate", label: "Blood Request Date", type: "date"},
+        {name: "hospital", label: "Hospital ID", type: "text", placeholder: "Leave blank if not applicable"}
+      ]
+    };
+
+    // Entity display names and emojis
+    const entityDisplayNames = {
+      donors: "👤 Donors",
+      blood: "🩸 Blood Inventory",
+      bloodbanks: "🏥 Blood Banks", 
+      employees: "👥 Employees",
+      hospitals: "🏨 Hospitals",
+      patients: "🤒 Patients"
+    };
+
+    // Enhanced input creation with validation and accessibility
+    function createInput(field, value = "") {
+      const wrapper = document.createElement('div');
+      wrapper.className = "form-group";
+      
+      const label = document.createElement('label');
+      label.innerText = field.label;
+      label.htmlFor = field.name;
+      if (field.required) {
+        label.innerHTML += ' <span style="color: var(--danger)">*</span>';
+      }
+
+      let input;
+      
+      if (field.type === 'textarea') {
+        input = document.createElement('textarea');
+        input.rows = 3;
+      } else if (field.type === 'select') {
+        input = document.createElement('select');
+        
+        // Add default option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = `Select ${field.label}`;
+        input.appendChild(defaultOption);
+        
+        // Add field options
+        if (field.options) {
+          field.options.forEach(optionValue => {
+            const option = document.createElement('option');
+            option.value = optionValue;
+            option.textContent = optionValue;
+            input.appendChild(option);
+          });
+        }
+      } else {
+        input = document.createElement('input');
+        input.type = field.type || 'text';
+        
+        if (field.min !== undefined) input.min = field.min;
+        if (field.max !== undefined) input.max = field.max;
+        if (field.step !== undefined) input.step = field.step;
+        if (field.pattern) input.pattern = field.pattern;
+      }
+
+      input.id = field.name;
+      input.name = field.name;
+      input.value = value || "";
+      input.placeholder = field.placeholder || field.label;
+      input.required = field.required || false;
+      
+      // Add validation styles
+      input.addEventListener('invalid', (e) => {
+        e.target.style.borderColor = 'var(--danger)';
+        showNotification(`Please provide a valid ${field.label.toLowerCase()}`, 'error');
+      });
+
+      input.addEventListener('input', (e) => {
+        if (e.target.checkValidity()) {
+          e.target.style.borderColor = 'var(--border-primary)';
+        }
+      });
+
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      return wrapper;
+    }
+
+    // Enhanced form rendering with better layout
+    function renderForm(data = {}) {
+      formFieldsDiv.innerHTML = "";
+      const fields = entityFields[currentEntity] || [];
+      const formRow = document.createElement('div');
+      formRow.className = "form-row";
+      
+      fields.forEach(field => {
+        const val = data[field.name] ?? "";
+        const displayVal = Array.isArray(val) ? val.join(", ") : val;
+        const inputWrapper = createInput(field, displayVal);
+        formRow.appendChild(inputWrapper);
+      });
+      
+      formFieldsDiv.appendChild(formRow);
+    }
+
+    // Enhanced table rendering with better styling and actions
+    function renderTable(data) {
+      lastFetchedData = data || [];
+      filteredData = [...lastFetchedData];
+      
+      tableHead.innerHTML = "";
+      tableBody.innerHTML = "";
+      
+      if (!data || data.length === 0) {
+        tableHead.innerHTML = `
+          <tr>
+            <th style="text-align: center; padding: 40px;">
+              📭 No ${entityDisplayNames[currentEntity]} found
+            </th>
+          </tr>
+        `;
+        return;
+      }
+
+      // Create table headers
+      const keys = Object.keys(data[0]).filter(key => key !== '__v').slice(0, 8);
+      const headerRow = document.createElement('tr');
+      
+      keys.forEach(key => {
+        const th = document.createElement('th');
+        th.textContent = formatHeaderName(key);
+        headerRow.appendChild(th);
+      });
+      
+      const actionsHeader = document.createElement('th');
+      actionsHeader.textContent = 'Actions';
+      actionsHeader.style.textAlign = 'center';
+      headerRow.appendChild(actionsHeader);
+      tableHead.appendChild(headerRow);
+
+      // Create table rows
+      data.forEach((item, index) => {
+        const row = document.createElement('tr');
+        
+        keys.forEach(key => {
+          const cell = document.createElement('td');
+          let value = item[key];
+          
+          if (typeof value === 'object' && value !== null) {
+            value = JSON.stringify(value);
+          }
+          
+          if (Array.isArray(value)) {
+            value = value.join(', ');
+          }
+          
+          cell.textContent = value === undefined || value === null ? '-' : String(value).substring(0, 50);
+          if (String(value).length > 50) {
+            cell.textContent += '...';
+            cell.title = value;
+          }
+          
+          row.appendChild(cell);
+        });
+        
+        // Actions cell
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'actions';
+        actionsCell.style.textAlign = 'center';
+        
+        const editBtn = document.createElement('button');
+        editBtn.textContent = '✏️';
+        editBtn.className = 'btn btn-secondary btn-sm';
+        editBtn.title = 'Edit Record';
+        editBtn.setAttribute('aria-label', `Edit ${currentEntity} record`);
+        editBtn.onclick = () => startEdit(item);
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '🗑️';
+        deleteBtn.className = 'btn btn-danger btn-sm';
+        deleteBtn.title = 'Delete Record';
+        deleteBtn.setAttribute('aria-label', `Delete ${currentEntity} record`);
+        deleteBtn.style.marginLeft = '8px';
+        deleteBtn.onclick = () => confirmDelete(item._id, item.name || item.bloodId || item.patientId || 'this record');
+        
+        actionsCell.appendChild(editBtn);
+        actionsCell.appendChild(deleteBtn);
+        row.appendChild(actionsCell);
+        tableBody.appendChild(row);
+      });
+
+      updateStatistics(data);
+    }
+
+    // Format header names for better readability
+    function formatHeaderName(name) {
+      return name
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, str => str.toUpperCase())
+        .replace('_id', 'ID')
+        .replace('Id', ' ID');
+    }
+
+    // Enhanced statistics dashboard
+    function updateStatistics(data) {
+      if (!data || data.length === 0) {
+        statsGrid.innerHTML = '';
+        return;
+      }
+
+      let stats = [];
+      
+      switch(currentEntity) {
+        case 'donors':
+          stats = [
+            { label: 'Total Donors', value: data.length, icon: '👤' },
+            { label: 'Eligible', value: data.filter(d => d.donationStatus === 'Eligible').length, icon: '✅' },
+            { label: 'Average Age', value: Math.round(data.reduce((sum, d) => sum + (d.age || 0), 0) / data.length) || 0, icon: '📊' }
+          ];
+          break;
+        case 'blood':
+          const bloodGroups = {};
+          data.forEach(b => {
+            bloodGroups[b.bloodGroup] = (bloodGroups[b.bloodGroup] || 0) + 1;
+          });
+          const mostCommon = Object.keys(bloodGroups).reduce((a, b) => bloodGroups[a] > bloodGroups[b] ? a : b, '');
+          stats = [
+            { label: 'Total Units', value: data.length, icon: '🩸' },
+            { label: 'Blood Groups', value: Object.keys(bloodGroups).length, icon: '🔄' },
+            { label: 'Most Common', value: mostCommon || 'N/A', icon: '📈' }
+          ];
+          break;
+        default:
+          stats = [
+            { label: `Total ${entityDisplayNames[currentEntity]}`, value: data.length, icon: '📊' }
+          ];
+      }
+
+      statsGrid.innerHTML = stats.map(stat => `
+        <div class="stat-card">
+          <div class="stat-number">${stat.icon} ${stat.value}</div>
+          <div class="stat-label">${stat.label}</div>
+        </div>
+      `).join('');
+    }
+
+    // Enhanced API fetch with better error handling
+    async function fetchList() {
+      try {
+        statusIndicator.style.background = 'var(--warning)';
+        
+        const response = await fetch(`${API_BASE}/${currentEntity}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        statusIndicator.style.background = 'var(--success)';
+        renderTable(data);
+        
+      } catch (error) {
+        statusIndicator.style.background = 'var(--danger)';
+        console.error('Fetch error:', error);
+        
+        tableHead.innerHTML = `
+          <tr>
+            <th style="text-align: center; padding: 40px; color: var(--danger)">
+              ⚠️ Error loading data<br>
+              <small style="font-weight: normal; margin-top: 8px; display: block;">
+                ${error.message}<br>
+                Please check your backend server and CORS settings
+              </small>
+            </th>
+          </tr>
+        `;
+        tableBody.innerHTML = "";
+        showNotification(`Failed to load ${entityDisplayNames[currentEntity]}: ${error.message}`, 'error');
+      }
+    }
+
+    // Enhanced form submission with better validation
+    mainForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!mainForm.checkValidity()) {
+        mainForm.reportValidity();
+        return;
+      }
+      
+      const formData = new FormData(mainForm);
+      const payload = {};
+      
+      for (const [key, value] of formData.entries()) {
+        if (value.trim() === "") continue;
+        
+        // Handle array fields
+        if (key === "diseases" && value.includes(',')) {
+          payload[key] = value.split(',').map(s => s.trim()).filter(Boolean);
+        } else {
+          payload[key] = value.trim();
+        }
+      }
+
+      // Disable submit button during request
+      submitBtn.disabled = true;
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = '⏳ Saving...';
+
+      try {
+        let response;
+        
+        if (editingId) {
+          response = await fetch(`${API_BASE}/${currentEntity}/${editingId}`, {
+            method: "PUT",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          response = await fetch(`${API_BASE}/${currentEntity}`, {
+            method: "POST", 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`${response.status}: ${errorText}`);
+        }
+
+        // Success handling
+        const action = editingId ? 'updated' : 'created';
+        showNotification(`Record ${action} successfully!`, 'success');
+        
+        resetForm();
+        await fetchList();
+        
+      } catch (error) {
+        console.error('Save error:', error);
+        showNotification(`Failed to save record: ${error.message}`, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    });
+
+    // Enhanced edit functionality
+    function startEdit(item) {
+      editingId = item._id;
+      submitBtn.innerHTML = '💾 Update Record';
+      cancelEditBtn.style.display = 'inline-block';
+      formTitle.innerHTML = '✏️ Edit Record';
+      
+      // Prepare data for form
+      const formData = { ...item };
+      if (Array.isArray(formData.diseases)) {
+        formData.diseases = formData.diseases.join(', ');
+      }
+      
+      renderForm(formData);
+      
+      // Populate form fields
+      const inputs = mainForm.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        if (formData[input.name] !== undefined) {
+          input.value = formData[input.name];
+        }
+      });
+      
+      // Scroll to form
+      document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Enhanced delete with confirmation
+    function confirmDelete(id, name) {
+      if (!confirm(`⚠️ Are you sure you want to delete "${name}"?\n\nThis action cannot be undone.`)) {
+        return;
+      }
+      doDelete(id, name);
+    }
+
+    async function doDelete(id, name) {
+      try {
+        const response = await fetch(`${API_BASE}/${currentEntity}/${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        showNotification(`"${name}" deleted successfully`, 'success');
+        await fetchList();
+        
+      } catch (error) {
+        console.error('Delete error:', error);
+        showNotification(`Failed to delete record: ${error.message}`, 'error');
+      }
+    }
+
+    // Form reset functionality
+    function resetForm() {
+      editingId = null;
+      submitBtn.innerHTML = '💾 Save Record';
+      cancelEditBtn.style.display = 'none';
+      formTitle.innerHTML = '➕ Add New Record';
+      mainForm.reset();
+      renderForm();
+    }
+
+    // Search functionality
+    function filterData(searchTerm) {
+      if (!searchTerm.trim()) {
+        renderTable(lastFetchedData);
+        return;
+      }
+
+      const filtered = lastFetchedData.filter(item => {
+        return Object.values(item).some(value => {
+          if (typeof value === 'string') {
+            return value.toLowerCase().includes(searchTerm.toLowerCase());
+          }
+          if (Array.isArray(value)) {
+            return value.some(v => String(v).toLowerCase().includes(searchTerm.toLowerCase()));
+          }
+          return String(value).toLowerCase().includes(searchTerm.toLowerCase());
+        });
+      });
+
+      renderTable(filtered);
+    }
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+      // Remove existing notifications
+      const existing = document.querySelector('.notification');
+      if (existing) {
+        existing.remove();
+      }
+
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 5000);
+      
+      // Allow manual dismissal
+      notification.addEventListener('click', () => notification.remove());
+    }
+
+    // Event Listeners
+    refreshBtn.addEventListener('click', fetchList);
+    clearFormBtn.addEventListener('click', resetForm);
+    cancelEditBtn.addEventListener('click', resetForm);
+
+    searchInput.addEventListener('input', (e) => {
+      filterData(e.target.value);
+    });
+
+    entitySelect.addEventListener('change', (e) => {
+      currentEntity = e.target.value;
+      resetForm();
+      fetchList();
+    });
+
+    // Initialize the application
+    async function init() {
+      renderForm();
+      await fetchList();
+      showNotification('🩸 Blood Bank Management System loaded successfully!', 'success');
+    }
+
+    // Start the application
+    init();
+
+    // Add keyboard shortcuts for better accessibility
+    document.addEventListener('keydown', (e) => {
+      // Ctrl/Cmd + R for refresh
+      if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        fetchList();
+      }
+      
+      // Escape to cancel edit
+      if (e.key === 'Escape' && editingId) {
+        resetForm();
+      }
+    });
+
+  </script>
+</body>
+</html>
