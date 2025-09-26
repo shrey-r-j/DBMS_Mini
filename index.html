@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Blood Bank - Frontend (Vanilla)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --accent: #2b6cb0;
+      --muted: #666;
+      --card: #fff;
+      --bg: #f3f6fb;
+      --danger: #e53e3e;
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{margin:0;background:var(--bg);color:#111;padding:28px;}
+    .container{max-width:1100px;margin:0 auto;}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+    h1{margin:0;font-size:20px;color:var(--accent);}
+    .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(20,30,60,0.06);margin-bottom:16px;}
+    .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    select,input,button,textarea{padding:8px 10px;border-radius:8px;border:1px solid #ddd;font-size:14px;}
+    button{cursor:pointer;background:var(--accent);color:white;border:none;}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid #cfe0f6;}
+    .flex{display:flex;gap:12px;align-items:center;}
+    form .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+    label{font-size:13px;color:var(--muted)}
+    .table-wrap{overflow:auto;margin-top:10px;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th,td{padding:8px 10px;border-bottom:1px solid #eee;text-align:left;vertical-align:top;}
+    th{background:#fbfdff;color:var(--muted);font-weight:600}
+    td.actions{white-space:nowrap}
+    .small{font-size:12px;color:var(--muted)}
+    .danger{background:var(--danger);color:white;border:none;padding:6px 8px;border-radius:6px}
+    .success{background:#2f855a;color:white;border:none;padding:6px 8px;border-radius:6px}
+    .hint{font-size:12px;color:#888;margin-top:6px}
+    @media (max-width:720px){
+      .controls{flex-direction:column;align-items:flex-start}
+      .card{padding:12px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Blood Bank Management — Plain HTML/CSS + JS</h1>
+      <div class="small">Uses your Express API endpoints. Enable CORS on server.</div>
+    </header>
+
+    <div class="card">
+      <div class="controls">
+        <div class="flex">
+          <label for="entity">Entity:</label>
+          <select id="entity">
+            <option value="donors">Donor</option>
+            <option value="blood">Blood</option>
+            <option value="bloodbanks">Blood Bank</option>
+            <option value="employees">Employee</option>
+            <option value="hospitals">Hospital</option>
+            <option value="patients">Patient</option>
+          </select>
+        </div>
+
+        <div class="flex">
+          <button id="refreshBtn" class="ghost">Refresh</button>
+          <button id="clearFormBtn" class="ghost">Clear Form</button>
+        </div>
+
+        <div style="margin-left:auto" class="small">API base: <span id="apiBaseSpan"></span></div>
+      </div>
+    </div>
+
+    <div class="card" id="formCard">
+      <h3 id="formTitle">Add Record</h3>
+      <form id="mainForm">
+        <div id="formFields"></div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button id="submitBtn" type="submit" class="success">Save</button>
+          <button id="cancelEditBtn" type="button" class="ghost" style="display:none">Cancel Edit</button>
+        </div>
+        <div class="hint">Tip: some fields are free-text — make sure IDs (like donorId, bloodId etc.) are unique if you use them in your schemas.</div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Records</h3>
+      <div class="table-wrap">
+        <table id="recordsTable">
+          <thead><tr id="tableHead"><th>Loading...</th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+
+/*
+  Single-file frontend (vanilla JS) for CRUD.
+  Set API_BASE to your backend (default: http://localhost:3000/api)
+  The code contains per-entity field definitions and mapping to backend routes.
+*/
+
+const API_BASE = "http://localhost:3000/api"; // <-- change if needed
+document.getElementById('apiBaseSpan').innerText = API_BASE;
+
+const entitySelect = document.getElementById('entity');
+const formFieldsDiv = document.getElementById('formFields');
+const mainForm = document.getElementById('mainForm');
+const tableHead = document.getElementById('tableHead');
+const tableBody = document.getElementById('tableBody');
+const refreshBtn = document.getElementById('refreshBtn');
+const clearFormBtn = document.getElementById('clearFormBtn');
+const formTitle = document.getElementById('formTitle');
+const submitBtn = document.getElementById('submitBtn');
+const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+let currentEntity = entitySelect.value;
+let editingId = null;
+let lastFetchedData = [];
+
+// Define fields per entity (label: inputName)
+const entityFields = {
+  donors: [
+    {name: "donorId", label: "Donor ID"},
+    {name: "name", label: "Name"},
+    {name: "dob", label: "DOB (YYYY-MM-DD)"},
+    {name: "age", label: "Age", type: "number"},
+    {name: "address", label: "Address"},
+    {name: "contactNo", label: "Contact No"},
+    {name: "diseases", label: "Diseases (comma separated)"},
+    {name: "lastDonationDate", label: "Last Donation Date"},
+    {name: "donationStatus", label: "Donation Status"}
+  ],
+  blood: [
+    {name: "bloodId", label: "Blood ID"},
+    {name: "bloodGroup", label: "Blood Group"},
+    {name: "cost", label: "Cost", type: "number"},
+    {name: "storedDate", label: "Stored Date"},
+    {name: "expiryDate", label: "Expiry Date"},
+    {name: "donor", label: "Donor (donor _id OR leave blank to skip)"}
+  ],
+  bloodbanks: [
+    {name: "bloodBankId", label: "BloodBank ID"},
+    {name: "order", label: "Order (text)"},
+    {name: "deliveryDate", label: "Delivery Date"},
+  ],
+  employees: [
+    {name: "employeeId", label: "Employee ID"},
+    {name: "name", label: "Name"},
+    {name: "contactNo", label: "Contact No"},
+    {name: "bloodBank", label: "BloodBank (bloodBank _id OR leave blank)"},
+  ],
+  hospitals: [
+    {name: "hospitalName", label: "Hospital Name"},
+    {name: "address", label: "Address"},
+    {name: "contactNo", label: "Contact No"},
+    {name: "orderStatus", label: "Order Status"},
+  ],
+  patients: [
+    {name: "patientId", label: "Patient ID"},
+    {name: "name", label: "Name"},
+    {name: "dob", label: "DOB"},
+    {name: "bloodGroup", label: "Blood Group"},
+    {name: "contactNo", label: "Contact No"},
+    {name: "borrowDate", label: "Borrow Date"},
+    {name: "hospital", label: "Hospital (hospital _id OR leave blank)"}
+  ]
+};
+
+// helper to create input nodes
+function createInput(field, value=""){
+  const wrapper = document.createElement('div');
+  wrapper.style.minWidth = "220px";
+  const lbl = document.createElement('label');
+  lbl.innerText = field.label;
+  lbl.style.display = "block";
+  lbl.style.marginBottom = "6px";
+  const input = document.createElement(field.type === 'textarea' ? 'textarea' : 'input');
+  input.name = field.name;
+  input.value = value || "";
+  input.placeholder = field.label;
+  input.style.width = "100%";
+  if(field.type === "number") input.type = "number";
+  wrapper.appendChild(lbl);
+  wrapper.appendChild(input);
+  return wrapper;
+}
+
+// render form for current entity
+function renderForm(data = {}) {
+  formFieldsDiv.innerHTML = "";
+  const fields = entityFields[currentEntity] || [];
+  const row = document.createElement('div');
+  row.className = "row";
+  fields.forEach(f => {
+    const val = data[f.name] ?? "";
+    // if arrays are present (like diseases), join for editing
+    const displayVal = Array.isArray(val) ? val.join(",") : val;
+    const inputNode = createInput(f, displayVal);
+    row.appendChild(inputNode);
+  });
+  formFieldsDiv.appendChild(row);
+}
+
+// generate table columns from fetched data
+function renderTable(data) {
+  lastFetchedData = data || [];
+  tableHead.innerHTML = "";
+  tableBody.innerHTML = "";
+  if(!data || data.length === 0){
+    tableHead.innerHTML = "<tr><th>No records</th></tr>";
+    return;
+  }
+  // show up to first 9 columns (common)
+  const keys = Object.keys(data[0]).slice(0, 9);
+  const trHead = document.createElement('tr');
+  keys.forEach(k => {
+    const th = document.createElement('th');
+    th.innerText = k;
+    trHead.appendChild(th);
+  });
+  const thActions = document.createElement('th');
+  thActions.innerText = "Actions";
+  trHead.appendChild(thActions);
+  tableHead.appendChild(trHead);
+
+  data.forEach(item => {
+    const tr = document.createElement('tr');
+    keys.forEach(k => {
+      const td = document.createElement('td');
+      let v = item[k];
+      if(typeof v === 'object' && v !== null) {
+        try { v = JSON.stringify(v); } catch(e) { v = String(v); }
+      }
+      td.innerText = v === undefined ? "" : v;
+      tr.appendChild(td);
+    });
+    const tdActions = document.createElement('td');
+    tdActions.className = "actions";
+    const editBtn = document.createElement('button');
+    editBtn.innerText = "Edit";
+    editBtn.className = "ghost";
+    editBtn.onclick = () => startEdit(item);
+    const delBtn = document.createElement('button');
+    delBtn.innerText = "Delete";
+    delBtn.className = "danger";
+    delBtn.style.marginLeft = "8px";
+    delBtn.onclick = () => doDelete(item._id);
+    tdActions.appendChild(editBtn);
+    tdActions.appendChild(delBtn);
+    tr.appendChild(tdActions);
+    tableBody.appendChild(tr);
+  });
+}
+
+// fetch list
+async function fetchList(){
+  try {
+    const res = await fetch(`${API_BASE}/${currentEntity}`);
+    if(!res.ok) throw new Error("Failed to fetch");
+    const data = await res.json();
+    renderTable(data);
+  } catch (err) {
+    tableHead.innerHTML = "<tr><th>Error fetching — check backend & CORS</th></tr>";
+    tableBody.innerHTML = "";
+    console.error(err);
+  }
+}
+
+// submit (create or update)
+mainForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(mainForm);
+  const payload = {};
+  for(const [k,v] of fd.entries()){
+    if(v === "") continue;
+    // convert CSV fields like diseases into arrays
+    if(k === "diseases") {
+      payload[k] = v.split(",").map(s=>s.trim()).filter(Boolean);
+    } else {
+      payload[k] = v;
+    }
+  }
+
+  try {
+    if(editingId){
+      const res = await fetch(`${API_BASE}/${currentEntity}/${editingId}`, {
+        method: "PUT",
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) throw new Error("Update failed");
+      editingId = null;
+      cancelEditBtn.style.display = "none";
+      submitBtn.innerText = "Save";
+      formTitle.innerText = "Add Record";
+    } else {
+      const res = await fetch(`${API_BASE}/${currentEntity}`, {
+        method: "POST",
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if(!res.ok) {
+        const txt = await res.text();
+        throw new Error("Create failed: "+txt);
+      }
+    }
+    mainForm.reset();
+    fetchList();
+  } catch (err) {
+    alert("Error: " + err.message);
+    console.error(err);
+  }
+});
+
+// start edit
+function startEdit(item){
+  editingId = item._id;
+  submitBtn.innerText = "Update";
+  cancelEditBtn.style.display = "inline-block";
+  formTitle.innerText = "Edit Record";
+  // convert array fields to comma string for form
+  const copy = {...item};
+  if(Array.isArray(copy.diseases)) copy.diseases = copy.diseases.join(",");
+  renderForm(copy);
+  // populate actual form inputs values
+  const inputs = mainForm.querySelectorAll('input,textarea');
+  inputs.forEach(inp => {
+    if(copy[inp.name] !== undefined) inp.value = copy[inp.name];
+    else inp.value = "";
+  });
+}
+
+// cancel edit
+cancelEditBtn.addEventListener('click', () => {
+  editingId = null;
+  submitBtn.innerText = "Save";
+  cancelEditBtn.style.display = "none";
+  formTitle.innerText = "Add Record";
+  mainForm.reset();
+  renderForm();
+});
+
+// delete
+async function doDelete(id){
+  if(!confirm("Delete record?")) return;
+  try {
+    const res = await fetch(`${API_BASE}/${currentEntity}/${id}`, {method: 'DELETE'});
+    if(!res.ok) throw new Error("Delete failed");
+    fetchList();
+  } catch (err) {
+    alert("Error: " + err.message);
+    console.error(err);
+  }
+}
+
+// clear form
+clearFormBtn.addEventListener('click', ()=>{
+  mainForm.reset();
+  editingId = null;
+  cancelEditBtn.style.display = "none";
+  submitBtn.innerText = "Save";
+  formTitle.innerText = "Add Record";
+  renderForm();
+});
+
+// refresh
+refreshBtn.addEventListener('click', fetchList);
+
+// handle entity change
+entitySelect.addEventListener('change', (e)=>{
+  currentEntity = e.target.value;
+  editingId = null;
+  formTitle.innerText = "Add Record";
+  submitBtn.innerText = "Save";
+  cancelEditBtn.style.display = "none";
+  renderForm();
+  fetchList();
+});
+
+// initial render
+renderForm();
+fetchList();
+
+</script>
+</body>
+</html>

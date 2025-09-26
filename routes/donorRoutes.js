@@ -1,7 +1,7 @@
 // routes/donorRoutes.js
 const express = require("express");
 const router = express.Router();
-const Donor = require("../models/Donor");
+const Donor = require("../models/donor.js");
 
 // CREATE
 router.post("/", async (req, res) => {

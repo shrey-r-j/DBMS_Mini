@@ -1,7 +1,7 @@
 // routes/employeeRoutes.js
 const express = require("express");
 const router = express.Router();
-const Employee = require("../models/BloodBankEmployee");
+const Employee = require("../models/bloodbankemployee.js");
 
 // CREATE
 router.post("/", async (req, res) => {

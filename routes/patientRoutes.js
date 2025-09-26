@@ -1,7 +1,7 @@
 // routes/patientRoutes.js
 const express = require("express");
 const router = express.Router();
-const Patient = require("../models/Patient");
+const Patient = require("../models/patient.js");
 
 // CREATE
 router.post("/", async (req, res) => {
